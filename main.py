@@ -14,8 +14,8 @@ def capture_screenshot():
 	screenshot = screenshot[400:-110,150:-150]
 
 	# scale image
-	# scale = 0.8
-	# screenshot = cv2.resize(screenshot, (0,0), fx=scale, fy=scale)
+	scale = 0.75
+	screenshot = cv2.resize(screenshot, (0,0), fx=scale, fy=scale)
 
 	return screenshot
 
@@ -39,7 +39,9 @@ screenshot = capture_screenshot()
 color_filter = load_color_filter()
 
 edit_channel = 0
-	
+
+canny_thresh = [100,200]
+
 while 1:	
 	screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
 
@@ -50,8 +52,23 @@ while 1:
 
 	filtered = cv2.bitwise_and(screenshot, screenshot, mask=mask)
 
-	image = np.hstack((screenshot, filtered))
+	filtered_gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
+	contours, hierarchy = cv2.findContours(filtered_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
+	cont_img = np.copy(filtered)
+
+	max_area_cont = max(contours, key = cv2.contourArea)
+	cv2.drawContours(cont_img, [max_area_cont], 0, (0,255,0), 2)
+
+	# for x,y in np.squeeze(max_area_cont):
+	# 	cont_img = cv2.circle(cont_img, (x,y), radius=2, color=(255, 0, 0), thickness=-1)
+
+	# contours.sort(key=cv2.contourArea,reverse=True)
+	# cv2.drawContours(cont_img, contours, 0, (255,0,0), 2)
+	# cv2.drawContours(cont_img, contours, 1, (0,255,0), 2)
+	# cv2.drawContours(cont_img, contours, 2, (0,0,255), 2)
+
+	image = np.hstack((screenshot, cont_img))
 	cv2.imshow(WINDOW_NAME, image)
 
 	key = cv2.waitKeyEx(0)
@@ -79,6 +96,16 @@ while 1:
 	elif key == K_RIGHT:
 		adjust_color_filter(color_filter, edit_channel, 0, 1)
 
+	elif key == ord('['):
+		canny_thresh[0] -= 1
+	elif key == ord(']'):
+		canny_thresh[0] += 1
+	elif key == ord(';'):
+		canny_thresh[1] -= 1
+	elif key == ord('\''):
+		canny_thresh[1] += 1
+
+	print(canny_thresh)
 	print(color_filter, '\n')
 
 cv2.destroyAllWindows()
