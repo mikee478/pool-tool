@@ -1,6 +1,7 @@
 WINDOW_NAME = 'Pool Tool'
 SCREENSHOT_FILE_NAME = 'screenshot.png'
 
+#Quick Time Player
 QTP_WINDOW_NAME = 'Movie Recording'
 
 WAIT_KEY_DELAY_MS = 100
