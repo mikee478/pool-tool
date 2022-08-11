@@ -14,3 +14,5 @@ K_UP = 63232
 K_DOWN = 63233
 K_LEFT = 63234
 K_RIGHT = 63235
+
+CONFIG_FILE = 'config.pickle'

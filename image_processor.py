@@ -3,6 +3,8 @@ import pickle
 import cv2
 import numpy as np
 
+from defines import CONFIG_FILE
+
 class ImageProcessor:
 	def __init__(self):
 		self._config = {
@@ -13,12 +15,73 @@ class ImageProcessor:
 
 			'scale_factor': 100,
 
-			'ch0_lower_bound': 0,
-			'ch1_lower_bound': 0,
-			'ch2_lower_bound': 0,
-			'ch0_upper_bound': 255,
-			'ch1_upper_bound': 255,
-			'ch2_upper_bound': 255,
+			'white_h_min': 0,
+			'white_h_max': 255,
+			'white_s_min': 0,
+			'white_s_max': 255,
+			'white_v_min': 0,
+			'white_v_max': 255,
+
+			'yellow_h_min': 0,
+			'yellow_h_max': 255,
+			'yellow_s_min': 0,
+			'yellow_s_max': 255,
+			'yellow_v_min': 0,
+			'yellow_v_max': 255,
+
+			'green_h_min': 0,
+			'green_h_max': 255,
+			'green_s_min': 0,
+			'green_s_max': 255,
+			'green_v_min': 0,
+			'green_v_max': 255,
+
+			'purple_h_min': 0,
+			'purple_h_max': 255,
+			'purple_s_min': 0,
+			'purple_s_max': 255,
+			'purple_v_min': 0,
+			'purple_v_max': 255,
+
+			'blue_h_min': 0,
+			'blue_h_max': 255,
+			'blue_s_min': 0,
+			'blue_s_max': 255,
+			'blue_v_min': 0,
+			'blue_v_max': 255,
+
+			'red_h_min': 0,
+			'red_h_max': 255,
+			'red_s_min': 0,
+			'red_s_max': 255,
+			'red_v_min': 0,
+			'red_v_max': 255,
+
+			'orange_h_min': 0,
+			'orange_h_max': 255,
+			'orange_s_min': 0,
+			'orange_s_max': 255,
+			'orange_v_min': 0,
+			'orange_v_max': 255,
+
+			'burgundy_h_min': 0,
+			'burgundy_h_max': 255,
+			'burgundy_s_min': 0,
+			'burgundy_s_max': 255,
+			'burgundy_v_min': 0,
+			'burgundy_v_max': 255,
+
+			'cue_h_min': 0,
+			'cue_h_max': 255,
+			'cue_s_min': 0,
+			'cue_s_max': 255,
+			'cue_v_min': 0,
+			'cue_v_max': 255,
+
+			'border_top_pct': 0,
+			'border_bottom_pct': 0,
+			'border_left_pct': 0,
+			'border_right_pct': 0,
 
 			'dilate_kernel_radius': 1,
 			'dilate_iterations': 1,
@@ -30,18 +93,19 @@ class ImageProcessor:
 		self._config_key = next(self._config_iter)
 
 	def save_config(self):
-		with open('config.pickle', 'wb') as file:
+		with open(CONFIG_FILE, 'wb') as file:
 			pickle.dump(self._config, file)
 			print('Config Saved')
 
 	def load_config(self):
 		try:
-			with open('config.pickle', 'rb') as file:
+			with open(CONFIG_FILE, 'rb') as file:
 				t = pickle.load(file)
 				for key,val in t.items():
 					if key in self._config:
 						self._config[key] = val
 				print('Config Loaded')
+				print(self._config)
 		except FileNotFoundError as e:
 			print(f'Load Config Failed: {e}')
 
@@ -66,29 +130,71 @@ class ImageProcessor:
 		]
 		return image
 
-	def _dilate(self, image):
-		s = 1 + 2 * self._config['dilate_kernel_radius']
-		kernel = np.ones((s,s), np.uint8)
-		im_dilate = cv2.dilate(image, kernel, iterations=self._config['dilate_iterations'])
-		# im_dilate  = cv2.erode(im_dilate, kernel, iterations=self._config['dilate_iterations'])
-		return im_dilate
-
 	def _hsv_filter(self, image):
 		# convert to hsv
 		im_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
-		# create hsv filter
-		mask = cv2.inRange(im_hsv, 
-			(self._config['ch0_lower_bound'], self._config['ch1_lower_bound'], self._config['ch2_lower_bound']), 
-			(self._config['ch0_upper_bound'], self._config['ch1_upper_bound'], self._config['ch2_upper_bound']))
-		
-		# convert to rgb
-		im_rgb = cv2.cvtColor(im_hsv, cv2.COLOR_HSV2RGB)
+		# create hsv masks
+		white_mask = cv2.inRange(im_hsv, 
+			(self._config['white_h_min'], self._config['white_s_min'], self._config['white_v_min']), 
+			(self._config['white_h_max'], self._config['white_s_max'], self._config['white_v_max']))
 
-		# apply fitler
-		im_filtered = cv2.bitwise_and(im_rgb, im_rgb, mask=mask)
+		yellow_mask = cv2.inRange(im_hsv, 
+			(self._config['yellow_h_min'], self._config['yellow_s_min'], self._config['yellow_v_min']), 
+			(self._config['yellow_h_max'], self._config['yellow_s_max'], self._config['yellow_v_max']))
+
+		green_mask = cv2.inRange(im_hsv, 
+			(self._config['green_h_min'], self._config['green_s_min'], self._config['green_v_min']), 
+			(self._config['green_h_max'], self._config['green_s_max'], self._config['green_v_max']))
+
+		purple_mask = cv2.inRange(im_hsv, 
+			(self._config['purple_h_min'], self._config['purple_s_min'], self._config['purple_v_min']), 
+			(self._config['purple_h_max'], self._config['purple_s_max'], self._config['purple_v_max']))
+		
+		blue_mask = cv2.inRange(im_hsv, 
+			(self._config['blue_h_min'], self._config['blue_s_min'], self._config['blue_v_min']), 
+			(self._config['blue_h_max'], self._config['blue_s_max'], self._config['blue_v_max']))
+
+		red_mask = cv2.inRange(im_hsv, 
+			(self._config['red_h_min'], self._config['red_s_min'], self._config['red_v_min']), 
+			(self._config['red_h_max'], self._config['red_s_max'], self._config['red_v_max']))
+
+		orange_mask = cv2.inRange(im_hsv, 
+			(self._config['orange_h_min'], self._config['orange_s_min'], self._config['orange_v_min']), 
+			(self._config['orange_h_max'], self._config['orange_s_max'], self._config['orange_v_max']))
+
+		burgundy_mask = cv2.inRange(im_hsv, 
+			(self._config['burgundy_h_min'], self._config['burgundy_s_min'], self._config['burgundy_v_min']), 
+			(self._config['burgundy_h_max'], self._config['burgundy_s_max'], self._config['burgundy_v_max']))
+
+		cue_mask = cv2.inRange(im_hsv, 
+			(self._config['cue_h_min'], self._config['cue_s_min'], self._config['cue_v_min']), 
+			(self._config['cue_h_max'], self._config['cue_s_max'], self._config['cue_v_max']))
+
+		mask = (white_mask | yellow_mask | green_mask | purple_mask | 
+			blue_mask | red_mask | orange_mask | burgundy_mask)
+
+		mask &= np.invert(cue_mask)
+		
+		border_mask = np.zeros_like(mask)
+		h,w = mask.shape
+		border_mask[
+			int(h * self._config['border_top_pct'] / 100) : int(h * (1-self._config['border_bottom_pct'] / 100)),
+			int(w * self._config['border_left_pct'] / 100) : int(w * (1-self._config['border_right_pct'] / 100))
+		].fill(1)
+
+		mask &= border_mask
+
+		# apply masks
+		im_filtered = cv2.bitwise_and(image, image, mask=mask)
 
 		return im_filtered
+
+	def _dilate(self, image):
+		s = 1 + 2 * self._config['dilate_kernel_radius']
+		kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(s,s))
+		im_dilate = cv2.dilate(image, kernel, iterations=self._config['dilate_iterations'])
+		return im_dilate
 
 	def _contours(self, image):
 		# find contours on filtered image
@@ -107,8 +213,8 @@ class ImageProcessor:
 
 		im_scale = self._scale(image)
 		im_crop = self._crop(im_scale)
-		im_dilate = self._dilate(im_crop)
-		im_filtered = self._hsv_filter(im_dilate)
-		im_contours = self._contours(im_filtered)
+		im_filtered = self._hsv_filter(im_crop)
+		im_dilate = self._dilate(im_filtered)
+		im_contours = self._contours(im_dilate)
 
-		return im_crop, im_dilate, im_filtered, im_contours
+		return im_crop, im_filtered, im_dilate, im_contours
